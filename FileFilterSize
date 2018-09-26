@@ -1,19 +1,19 @@
 filsz(){
-test $2 &&xt="\.(${2//,/|})"||xt='\.(tmp|bak|old)'
+test "$2" &&xt="\.(${2//,/|})"||xt='\.(tmp|bak|old)'
 p=~+
 if test "${1:0:1}" = /
 then	p=${1%/*} ;test -d "$p"||(echo Directory doesn\'t exist;exit 1)
 elif test $1 ;then	fn=`echo ${1##*/}| sed -E 's/[{}\.]/\\\&/g; s/\*/.*/g; s/\?/./'`
 else	fn='\S.*'
 fi
-o=;u=;v=
-if test $u ;then o="-mindepth $u " ;fi
-if test $v ;then o="$o-maxdepth $v" ;fi
+o=
+if test "$3" ;then o="-mindepth $u " ;fi
+if test "$4" ;then o="$o-maxdepth $v" ;fi
 y=0;x=0;a=;b=
-IFS=$'\n'  # # set it for Windows port, Msys: \r\n, Mac: \r
+IFS=$'\n'  # set it for Windows port, Msys: \r\n, Mac: \r
 while((1))
 do
-u="f $p -noleaf $o -type f -regextype posix-extended -iregex \".*/$fn$xt\" -printf \"%p %s\n\" |head -n33"
+u="find $p -noleaf $o -type f -regextype posix-extended -iregex \".*/$fn$xt\" -printf \"%p %s\n\" |head -n33"
 s=
 for s in `eval $u`
 {
@@ -25,22 +25,22 @@ for s in `eval $u`
 		elif test $z -gt $y ;then
 			rm -vf $b
 		else
-			if test `f ${f%/*} -noleaf -maxdepth 1 -type f -iname "$f" -newer "$b"`
+			if test `find ${f%/*} -noleaf -maxdepth 1 -type f -iname "$f" -newer "$b"`
 			then	rm -fv $b
 			else	rm -fv $f ;fi
 		fi
 	elif test -f "$a" ;then
-		x=`f ${a%/*} -noleaf -maxdepth 1 -type f -iregex $a -printf %s`
+		x=`find ${a%/*} -noleaf -maxdepth 1 -type f -iregex $a -printf %s`
 		if test $y -lt $x ;then
 			rm -fv $b
 		elif test $y -gt $x ;then
 			mv -fv $b $a
 		else
-			if test `f ${f%/*} -noleaf -maxdepth 1 -type f -iname "$a" -newer "$b"`
+			if test `find ${f%/*} -noleaf -maxdepth 1 -type f -iname "$a" -newer "$b"`
 			then	rm -fv $b
 			else	rm -fv $a ;fi
 		fi
-	else mv -fv $b $a	2>/dev/nul
+	else mv -fv $b $a 2>/dev/nul
 	fi
 	b=$f
 	a=$e
@@ -49,3 +49,4 @@ for s in `eval $u`
 test -z "$s" &&return
 done
 }
+
