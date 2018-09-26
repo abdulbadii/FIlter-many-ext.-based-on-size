@@ -1,0 +1,51 @@
+filsz(){
+test $2 &&xt="\.(${2//,/|})"||xt='\.(tmp|bak|old)'
+p=~+
+if test "${1:0:1}" = /
+then	p=${1%/*} ;test -d "$p"||(echo Directory doesn\'t exist;exit 1)
+elif test $1 ;then	fn=`echo ${1##*/}| sed -E 's/[{}\.]/\\\&/g; s/\*/.*/g; s/\?/./'`
+else	fn='\S.*'
+fi
+o=;u=;v=
+if test $u ;then o="-mindepth $u " ;fi
+if test $v ;then o="$o-maxdepth $v" ;fi
+y=0;x=0;a=;b=
+IFS=$'\n'
+while((1))
+do
+u="f $p -noleaf $o -type f -regextype posix-extended -iregex \".*/$fn$xt\" -printf \"%p %s\n\" |head -n33"
+s=
+for s in `eval $u`
+{
+	f=${s% *}
+	e=${f%.*}
+	z=${s##* }
+	if test "$e" = "$a" ;then
+		if test $z -lt $y ;then rm -vf $f
+		elif test $z -gt $y ;then
+			rm -vf $b
+		else
+			if test `f ${f%/*} -noleaf -maxdepth 1 -type f -iname "$f" -newer "$b"`
+			then	rm -fv $b
+			else	rm -fv $f ;fi
+		fi
+	elif test -f "$a" ;then
+		x=`f ${a%/*} -noleaf -maxdepth 1 -type f -iregex $a -printf %s`
+		if test $y -lt $x ;then
+			rm -fv $b
+		elif test $y -gt $x ;then
+			mv -fv $b $a
+		else
+			if test `f ${f%/*} -noleaf -maxdepth 1 -type f -iname "$a" -newer "$b"`
+			then	rm -fv $b
+			else	rm -fv $a ;fi
+		fi
+	else mv -fv $b $a	2>/dev/nul
+	fi
+	b=$f
+	a=$e
+	y=$z
+}
+test -z "$s" &&return
+done
+}
