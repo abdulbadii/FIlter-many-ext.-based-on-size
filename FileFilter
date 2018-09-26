@@ -1,3 +1,4 @@
+#! /usr/bin/bash
 filsz(){
 test "$2" &&xt="\.(${2//,/|})"||xt='\.(tmp|bak|old)'
 p=~+
