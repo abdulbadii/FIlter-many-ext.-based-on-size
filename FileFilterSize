@@ -10,7 +10,7 @@ o=;u=;v=
 if test $u ;then o="-mindepth $u " ;fi
 if test $v ;then o="$o-maxdepth $v" ;fi
 y=0;x=0;a=;b=
-IFS=$'\n'
+IFS=$'\n'  # # set it for Windows port, Msys: \r\n, Mac: \r
 while((1))
 do
 u="f $p -noleaf $o -type f -regextype posix-extended -iregex \".*/$fn$xt\" -printf \"%p %s\n\" |head -n33"
