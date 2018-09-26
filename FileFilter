@@ -8,8 +8,8 @@ elif test $1 ;then	fn=`echo ${1##*/}| sed -E 's/[{}\.]/\\\&/g; s/\*/.*/g; s/\?/.
 else	fn='\S.*'
 fi
 o=
-if test "$3" ;then o="-mindepth $u " ;fi
-if test "$4" ;then o="$o-maxdepth $v" ;fi
+if test "$3" ;then o="-mindepth $3 " ;fi
+if test "$4" ;then o="$o-maxdepth $4" ;fi
 y=0;x=0;a=;b=
 IFS=$'\n'  # set it for Windows port, Msys: \r\n, Mac: \r
 while((1))
