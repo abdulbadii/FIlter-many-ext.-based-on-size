@@ -1,3 +1,4 @@
+#! /usr/bin/bash
 filsz(){
 x='tmp|bak|old'
 f=;d=;p=~+;
