@@ -79,6 +79,7 @@ for s in `eval $u`
 			mv -fv $f $e
 		fi
 	else
+		mv -fv $f $e
 		a=$e
 		b=$f
 		y=$z
