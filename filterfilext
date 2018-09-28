@@ -1,22 +1,17 @@
 #! /usr/bin/bash
 filsz(){
-x='tmp|bak|old'
-f=;d=;p=~+;
+x=;f=;d=;p=~+;
 for o
 {
-if [[ $o =~ ^-x ]]
-then
-	o=${o:2}
-	x=${o:-$x}
-	
-elif [[ $o =~ ^-d ]]
-then
-	o=${o:2}
+if [[ $o =~ ^-x ]];then
+	x=${o//[-x=]/}
+elif [[ $o =~ ^-d ]];then
+	o=${o//[-d=]/}
 	a=${o%,*};b=${o#*,}
-	if test "$a" ;then d="-mindepth $a " ;fi
-	if test "$b" ;then d="$d-maxdepth $b" ;fi
-else
-if [[ $o =~ ^/ ]]; then
+	a=${a//[!0-9]/}
+	b=${b//[!0-9]/}
+	o=${a:+"-mindepth $a "}${b:+"-maxdepth $b "}
+elif [[ $o =~ ^/ ]]; then
 	if test -d "$o" ;then
 		p=$o
 	elif test -f $o ;then
@@ -31,17 +26,16 @@ else
 	elif test ! -d $p ;then	echo Directory does not exist;exit 1
 	fi
 fi
-break;fi
 }
+x=${x:-$'tmp|bak|old'}
 xt="\.(${x//,/|})"
 fn=${f:+`echo $f| sed -E 's/[{}\.$]/\\\&/g; s/\*/.*/g; s/\?/./'`}
 fn=${fn:-'[^/]+'}
-
-y=0;a=;b=;J=17
-IFS=$'\n'  # set it for Windows port-Msys : \r\n, Mac: \r
+y=0;a=;b=;J=9
+IFS=$'\r\n'  # set it for Windows port-Msys : \r\n, Mac: \r
 while((1))
 do
-u="find $p $d -type f -regextype posix-extended -iregex \".*/$fn$xt\" -printf \"%p %s\n\" |head -n$J"
+u="find $p -noleaf $d -type f -regextype posix-extended -iregex \".*/$fn$xt\" -printf \"%p %s\n\" |head -n$J"
 s=
 for s in `eval $u`
 {
@@ -52,9 +46,9 @@ for s in `eval $u`
 		if test $z -lt $y	;then
 			rm -fv $f
 		elif test $z -gt $y	;then
-			mv -fv $f $a
+			mv -fv $f ${b:=$a}
 			y=$z
-		elif test `find ${e%/*} -maxdepth 1 -type f -iname "${f##*/}" -newer "$b"` ;then
+		elif test `find ${e%/*} -noleaf -maxdepth 1 -type f -iname "${f##*/}" -newer "$b"` ;then
 		rm -fv $b
 			a=$e
 			b=$f
@@ -63,22 +57,22 @@ for s in `eval $u`
  			rm -fv $f
 		fi
 	elif test -f "$e" ;then
-		x=`find ${e%/*} -maxdepth 1 -type f -iname "${e##*/}" -printf %s`
+		x=`find ${e%/*} -noleaf -maxdepth 1 -type f -iname "${e##*/}" -printf %s`
 		if test $z -gt $x ;then
 			mv -fv $f $e
-			a=$e
-			b=
 			y=$z
 		elif test $z -lt $x ;then
 			rm -fv $f
-			a=$e
-			b=
 			y=$x
-		elif test `find ${e%/*} -maxdepth 1 -type f -iname "${e##*/}" -newer "$f"` ;then
+		elif test `find ${e%/*} -noleaf -maxdepth 1 -type f -iname "${e##*/}" -newer "$f"` ;then
 			rm -fv $f
+			y=$x
 		else
 			mv -fv $f $e
+			y=$z
 		fi
+		a=$e
+		b=
 	else
 		mv -fv $f $e
 		a=$e
@@ -86,7 +80,7 @@ for s in `eval $u`
 		y=$z
 	fi
 }
-test -z "$s"&&return
+test -z $s&&return
 ((J++))
 done
 unset IFS  # set back to default
