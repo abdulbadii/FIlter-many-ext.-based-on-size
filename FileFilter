@@ -36,7 +36,7 @@ xt="\.(${x//,/|})"
 fn=${f:+`echo $f| sed -E 's/[{}\.$]/\\\&/g; s/\*/.*/g; s/\?/./'`}
 fn=${fn:-'[^/]+'}
 
-y=0;x=0;a=;b=;J=17
+y=0;a=;b=;J=17
 IFS=$'\n'  # set it for Windows port-Msys : \r\n, Mac: \r
 while((1))
 do
@@ -88,5 +88,5 @@ for s in `eval $u`
 test -z "$s"&&return
 ((J++))
 done
-unset IFS  # set it to default
+unset IFS  # set back to default
 }
