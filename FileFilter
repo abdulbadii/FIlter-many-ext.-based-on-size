@@ -37,7 +37,7 @@ fn=${f:+`echo $f| sed -E 's/[{}\.$]/\\\&/g; s/\*/.*/g; s/\?/./'`}
 fn=${fn:-'[^/]+'}
 
 y=0;x=0;a=;b=;J=17
-IFS=$'\r\n'  # set it for Windows port-Msys : \r\n, Mac: \r
+IFS=$'\n'  # set it for Windows port-Msys : \r\n, Mac: \r
 while((1))
 do
 u="find $p $d -type f -regextype posix-extended -iregex \".*/$fn$xt\" -printf \"%p %s\n\" |head -n$J"
