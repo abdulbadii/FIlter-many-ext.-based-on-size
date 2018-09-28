@@ -1,53 +1,91 @@
-#! /usr/bin/bash
 filsz(){
-test "$2" &&xt="\.(${2//,/|})"||xt='\.(tmp|bak|old)'
-p=~+
-if test "${1:0:1}" = /
-then	p=${1%/*} ;test -d "$p"||(echo Directory doesn\'t exist;exit 1)
-elif test $1 ;then	fn=`echo ${1##*/}| sed -E 's/[{}\.]/\\\&/g; s/\*/.*/g; s/\?/./'`
-else	fn='\S.*'
+x='tmp|bak|old'
+f=;d=;p=~+;
+for o
+{
+if [[ $o =~ ^-x ]]
+then
+	o=${o:2}
+	x=${o:-$x}
+	
+elif [[ $o =~ ^-d ]]
+then
+	o=${o:2}
+	a=${o%,*};b=${o#*,}
+	if test "$a" ;then d="-mindepth $a " ;fi
+	if test "$b" ;then d="$d-maxdepth $b" ;fi
+else
+if [[ $o =~ ^/ ]]; then
+	if test -d "$o" ;then
+		p=$o
+	elif test -f $o ;then
+		p=${o%/*}
+		f=${o##*/}
+	else	echo Directory or file does not exist;exit 1
+	fi
+else
+	p=~+/$o
+	if test -f $p ;then
+		f=$o
+	elif test ! -d $p ;then	echo Directory does not exist;exit 1
+	fi
 fi
-o=
-if test "$3" ;then o="-mindepth $3 " ;fi
-if test "$4" ;then o="$o-maxdepth $4" ;fi
-y=0;x=0;a=;b=
-IFS=$'\n'  # set it for Windows port, Msys: \r\n, Mac: \r
+break;fi
+}
+xt="\.(${x//,/|})"
+fn=${f:+`echo $f| sed -E 's/[{}\.$]/\\\&/g; s/\*/.*/g; s/\?/./'`}
+fn=${fn:-'[^/]+'}
+
+y=0;x=0;a=;b=;J=17
+IFS=$'\r\n'  # set it for Windows port-Msys : \r\n, Mac: \r
 while((1))
 do
-u="find $p -noleaf $o -type f -regextype posix-extended -iregex \".*/$fn$xt\" -printf \"%p %s\n\" |head -n33"
+u="find $p $d -type f -regextype posix-extended -iregex \".*/$fn$xt\" -printf \"%p %s\n\" |head -n$J"
 s=
 for s in `eval $u`
 {
 	f=${s% *}
-	e=${f%.*}
+	e=`echo $f| sed -E "s'^(.*)$xt\$'\1'"`
 	z=${s##* }
 	if test "$e" = "$a" ;then
-		if test $z -lt $y ;then rm -vf $f
-		elif test $z -gt $y ;then
-			rm -vf $b
+		if test $z -lt $y	;then
+			rm -fv $f
+		elif test $z -gt $y	;then
+			mv -fv $f $a
+			y=$z
+		elif test `find ${e%/*} -maxdepth 1 -type f -iname "${f##*/}" -newer "$b"` ;then
+		rm -fv $b
+			a=$e
+			b=$f
+			y=$z
 		else
-			if test `find ${f%/*} -noleaf -maxdepth 1 -type f -iname "$f" -newer "$b"`
-			then	rm -fv $b
-			else	rm -fv $f ;fi
+ 			rm -fv $f
 		fi
-	elif test -f "$a" ;then
-		x=`find ${a%/*} -noleaf -maxdepth 1 -type f -iregex $a -printf %s`
-		if test $y -lt $x ;then
-			rm -fv $b
-		elif test $y -gt $x ;then
-			mv -fv $b $a
+	elif test -f "$e" ;then
+		x=`find ${e%/*} -maxdepth 1 -type f -iname "${e##*/}" -printf %s`
+		if test $z -gt $x ;then
+			mv -fv $f $e
+			a=$e
+			b=
+			y=$z
+		elif test $z -lt $x ;then
+			rm -fv $f
+			a=$e
+			b=
+			y=$x
+		elif test `find ${e%/*} -maxdepth 1 -type f -iname "${e##*/}" -newer "$f"` ;then
+			rm -fv $f
 		else
-			if test `find ${f%/*} -noleaf -maxdepth 1 -type f -iname "$a" -newer "$b"`
-			then	rm -fv $b
-			else	rm -fv $a ;fi
+			mv -fv $f $e
 		fi
-	else mv -fv $b $a 2>/dev/nul
+	else
+		a=$e
+		b=$f
+		y=$z
 	fi
-	b=$f
-	a=$e
-	y=$z
 }
-test -z "$s" &&return
+test -z "$s"&&return
+((J++))
 done
+unset IFS  # set it to default
 }
-
