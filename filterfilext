@@ -1,33 +1,34 @@
 #! /usr/bin/bash
 filsz(){
-x=;f=;d=;p=~+;
+f=;d=;p=~+;x='tmp(.tmp)?,bak,old'
 for o
 {
-if [[ $o =~ ^-x ]];then
-	x=${o//[-x=]/}
-elif [[ $o =~ ^-d ]];then
+case ${o:0:2} in
+-x)	
+	x=${o//[-x=]/};;
+-d)
 	o=${o//[-d=]/}
 	a=${o%,*};b=${o#*,}
 	a=${a//[!0-9]/}
 	b=${b//[!0-9]/}
-	o=${a:+"-mindepth $a "}${b:+"-maxdepth $b "}
-elif [[ $o =~ ^/ ]]; then
+	o=${a:+"-mindepth $a "}${b:+"-maxdepth $b "};;
+/)
 	if test -d "$o" ;then
 		p=$o
 	elif test -f $o ;then
 		p=${o%/*}
 		f=${o##*/}
 	else	echo Directory or file does not exist;exit 1
-	fi
-else
+	fi;;
+*)
 	p=~+/$o
 	if test -f $p ;then
 		f=$o
 	elif test ! -d $p ;then	echo Directory does not exist;exit 1
-	fi
-fi
+	fi;;
+esac
 }
-x=${x:-$'tmp|bak|old'}
+x="${x//./\\.}"
 xt="\.(${x//,/|})"
 fn=${f:+`echo $f| sed -E 's/[{}\.$]/\\\&/g; s/\*/.*/g; s/\?/./'`}
 fn=${fn:-'[^/]+'}
