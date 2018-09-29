@@ -32,7 +32,7 @@ xt="\.(${x//,/|})"
 fn=${f:+`echo $f| sed -E 's/[{}\.$]/\\\&/g; s/\*/.*/g; s/\?/./'`}
 fn=${fn:-'[^/]+'}
 y=0;a=;b=;J=9
-IFS=$'\r\n'  # set it for Windows port-Msys : \r\n, Mac: \r
+IFS=$'\n'  # set it for Windows port-Msys : \r\n, for Mac: \r
 while((1))
 do
 u="find $p -noleaf $d -type f -regextype posix-extended -iregex \".*/$fn$xt\" -printf \"%p %s\n\" |head -n$J"
@@ -46,7 +46,7 @@ for s in `eval $u`
 		if test $z -lt $y	;then
 			rm -fv $f
 		elif test $z -gt $y	;then
-			mv -fv $f ${b:=$a}
+			mv -fv $f ${b:-$a}
 			y=$z
 		elif test `find ${e%/*} -noleaf -maxdepth 1 -type f -iname "${f##*/}" -newer "$b"` ;then
 		rm -fv $b
