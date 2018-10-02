@@ -1,18 +1,17 @@
 #! /usr/bin/bash
 filsz(){
-f=;d=;p=~+;x='tmp(.tmp)?,bak,old'
+f=;d=;vr=v;p=~+;x='tmp(.tmp)?,bak,old'
 for o
 {
 case ${o:0:2} in
 -x)	
-	x=${o//[-x=]/};;
+	x=${o#-x[= ]};;
 -d)
-	o=${o//[-d=]/}
+	o=${o#-d[= ]/}
 	a=${o%,*};b=${o#*,}
-	a=${a//[!0-9]/}
-	b=${b//[!0-9]/}
 	o=${a:+"-mindepth $a "}${b:+"-maxdepth $b "};;
-/)
+-n)	vr=;;
+/[a-z])
 	if test -d "$o" ;then
 		p=$o
 	elif test -f $o ;then
@@ -24,7 +23,7 @@ case ${o:0:2} in
 	p=~+/$o
 	if test -f $p ;then
 		f=$o
-	elif test ! -d $p ;then	echo Directory does not exist;exit 1
+	elif test ! -d $p ;then	echo Option is unknown or directory does not exist;exit 1
 	fi;;
 esac
 }
@@ -32,11 +31,11 @@ x="${x//./\\.}"
 xt="\.(${x//,/|})"
 fn=${f:+`echo $f| sed -E 's/[{}\.$]/\\\&/g; s/\*/.*/g; s/\?/./'`}
 fn=${fn:-'[^/]+'}
-y=0;a=;b=;J=9
-IFS=$'\n'  # set it for Windows port-Msys : \r\n, for Mac: \r
-while((1))
+y=0;a=;b=
+IFS=$'\r\n'  # set it for Windows port-Msys : \r\n, Mac: \r
+s==;while(test "$s")
 do
-u="find $p -noleaf $d -type f -regextype posix-extended -iregex \".*/$fn$xt\" -printf \"%p %s\n\" |head -n$J"
+u="find $p -noleaf $d -type f -regextype posix-extended -iregex \".*/$fn$xt\" -printf \"%p %s\n\" |head -n313"
 s=
 for s in `eval $u`
 {
@@ -45,44 +44,43 @@ for s in `eval $u`
 	z=${s##* }
 	if test "$e" = "$a" ;then
 		if test $z -lt $y	;then
-			rm -fv $f
+			rm -f$vr $f
 		elif test $z -gt $y	;then
-			mv -fv $f ${b:-$a}
+			mv -f$vr $f ${b:-$a}
 			y=$z
-		elif test `find ${e%/*} -noleaf -maxdepth 1 -type f -iname "${f##*/}" -newer "$b"` ;then
-		rm -fv $b
+		elif test `find ${e%/*} -noleaf -maxdepth 1 -type f -iname "${f##*/}" -newer "$b"`
+		then
+			rm -f$vr $b
 			a=$e
 			b=$f
 			y=$z
 		else
- 			rm -fv $f
+ 			rm -f$vr $f
 		fi
 	elif test -f "$e" ;then
 		x=`find ${e%/*} -noleaf -maxdepth 1 -type f -iname "${e##*/}" -printf %s`
 		if test $z -gt $x ;then
-			mv -fv $f $e
+			mv -f$vr $f $e
 			y=$z
 		elif test $z -lt $x ;then
-			rm -fv $f
+			rm -f$vr $f
 			y=$x
 		elif test `find ${e%/*} -noleaf -maxdepth 1 -type f -iname "${e##*/}" -newer "$f"` ;then
-			rm -fv $f
+			rm -f$vr $f
 			y=$x
 		else
-			mv -fv $f $e
+			mv -f$vr $f $e
 			y=$z
 		fi
 		a=$e
 		b=
 	else
-		mv -fv $f $e
+		mv -f$vr $f $e
 		a=$e
 		b=$f
 		y=$z
 	fi
 }
-test -z $s&&return
-((J++))
 done
-unset IFS  # set back to default
+unset IFS
 }
