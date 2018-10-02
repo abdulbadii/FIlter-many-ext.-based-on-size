@@ -32,10 +32,11 @@ xt="\.(${x//,/|})"
 fn=${f:+`echo $f| sed -E 's/[{}\.$]/\\\&/g; s/\*/.*/g; s/\?/./'`}
 fn=${fn:-'[^/]+'}
 y=0;a=;b=
-IFS=$'\r\n'  # set it for Windows port-Msys : \r\n, Mac: \r
+IFS=$'\n'  # set it for Mac: \r. For Windows port-Msys : \r\n, and add option '-noleaf'  
+after 'find $p' thus u="find $p -noleaf $d -type f .....
 s==;while(test "$s")
 do
-u="find $p -noleaf $d -type f -regextype posix-extended -iregex \".*/$fn$xt\" -printf \"%p %s\n\" |head -n313"
+u="find $p  $d -type f -regextype posix-extended -iregex \".*/$fn$xt\" -printf \"%p %s\n\" |head -n313"
 s=
 for s in `eval $u`
 {
