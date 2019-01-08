@@ -33,7 +33,7 @@ else
 	f="[^/]+($xt|[-_][0-9]\.[^./]+)"
 fi
 
-IFS=$'\n'  # set it for Windows port, Msys: \r\n and add -noleaf option next to all find command, for Mac port: \r
+IFS=$'\n'  # set it for Windows port, Msys: \r\n and add -noleaf option next to any find command, for Mac port: \r
 s==;while(test "$s")
 do
 u="find $p $d -type f -regextype posix-extended -iregex \"^.*/$f\$\" -printf \"%p %s\n\" |head -n313"
@@ -45,14 +45,14 @@ for s in `eval $u`
 	else e=${fx/[-_][0-9]./.};fi
 	if test "$h" = "$d" &&test $e = $a;then
 		if test $z -lt $y	;then
-			echo SHL rm -f$w $fx
+			rm -f$w $fx
 			continue
 		elif test $z -gt $y	|| test `find $h -maxdepth 1 -type f -iname "${e##*/}" -newer "$b"`;then
-			echo SHL rm -f$w $b
+			rm -f$w $b
 		fi
 	elif test "$d" ;then
 		if test -f $a &&test `find $d -maxdepth 1 -type f -iname "${a##*/}" -printf %s` -gt $y;then echo SHL rm -f$w $b
-		else echo SHL mv -f$w $b $a
+		else mv -f$w $b $a
 		fi
 	fi
 	d=$h
