@@ -33,12 +33,11 @@ else
 	f="[^/]+($xt|[-_][0-9]\.[^./]+)"
 fi
 
-IFS=$'\n'  # set it for Windows port, Msys: \r\n and add -noleaf option next to any find command, for Mac port: \r
+IFS=$'\n'
 s==;while(test "$s")
 do
-u="find $p $d -type f -regextype posix-extended -iregex \"^.*/$f\$\" -printf \"%p %s\n\" |head -n313"
 y=0;a=;b=;d=;s=
-for s in `eval $u`
+for s in `find $p $d -type f -regextype posix-extended -iregex ^.*/$f\$ -printf '%p %s\n' |head -n313`
 {
 	fx=${s% *};h=${fx%/*};z=${s##* }
 	if [[ ${fx: -4} =~ $xt ]] ;then e=${fx:0:-4}
