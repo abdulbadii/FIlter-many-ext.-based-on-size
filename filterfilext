@@ -1,8 +1,8 @@
 filsz(){
-e=;d=;w=v;x='tmp,bak';p=~+
+e=;d=;w=v;p=~+;x='tmp,bak'
 for o
 {
-case ${o:0:2} in
+case ${o:0:3} in
 -x)	
 	x=${o#-x[= ]};;
 -d)
@@ -11,46 +11,47 @@ case ${o:0:2} in
 	o=${a:+"-mindepth $a "}${b:+"-maxdepth $b "};;
 -nv)	w=;;
 /[a-z])
-	if test -d "$o" ;then
+	if [ -d "$o" ] ;then
 		p=$o
-	elif test -e $o ;then
+	elif [ -e $o ] ;then
 		p=${o%/*}
 		e=${o##*/}
-	else	echo Directory or file does not exist;exit 1
+	else	echo Directory/file \'$o\' does not exist;return 1
 	fi;;
+-?*) echo Invalid option;return 1;;
 *)
-	if test -f ~+/$o ;then	e=$o
-	elif test -d ~+/$o ;then p=~+/$o
-	else echo Invalid option or directory/file does not exist;return 1
+	if [ -f ~+/$o ] ;then	e=$o
+	elif [ -d ~+/$o ] ;then p=~+/$o
+	else echo Directory/file  \'~+/$o\'does not exist;return 1
 	fi;;
 esac
 }
-x="${x//./\\.}";xt="\.(${x//,/|})"
-if test $e ;then
-	fr=`echo $e| sed -E 's/[{}\.$]/\\\&/g; s/\*/.*/g; s/\?/./'`
-	f="($fr$xt|${fr%%.*}[-_][0-9]${fr#*.})"
+xt="(${x//,/|})"
+if [ $e ] ;then
+	f="($(echo "$e.$xt|${e%%.*}[-_][0-9]${e#*.}"| sed -E 's/[{}\.$]/\\\&/g; s/\*/.*/g; s/\?/./'))"
 else
-	f="[^/]+($xt|[-_][0-9]\.[^./]+)"
+	f="[^/]+(\.$xt|[-_][0-9]\.[^./]+)"
 fi
-
 IFS=$'\n'
-s==;while(test "$s")
+s==;while [ "$s" ]
 do
 y=0;a=;b=;d=;s=
 for s in `find $p $d -type f -regextype posix-extended -iregex ^.*/$f\$ -printf '%p %s\n' |head -n313`
 {
 	fx=${s% *};h=${fx%/*};z=${s##* }
 	if [[ ${fx: -4} =~ $xt ]] ;then e=${fx:0:-4}
-	else e=${fx/[-_][0-9]./.};fi
-	if test "$h" = "$d" &&test $e = $a;then
-		if test $z -lt $y	;then
+	else
+		e=`echo $fx|sed -E 's/[-_][0-9](\.[^./]+)$/\1/'`
+	fi
+	if [ "$h" = "$d" ] &&[ $e = $a ];then
+		if [ $z -lt $y ]	;then
 			rm -f$w $fx
 			continue
-		elif test $z -gt $y	|| test `find $h -maxdepth 1 -type f -iname "${e##*/}" -newer "$b"`;then
+		elif [ $z -gt $y ]|| [ `find $h -noleaf -maxdepth 1 -type f -iname "${e##*/}" -newer "$b"` ];then
 			rm -f$w $b
 		fi
-	elif test "$d" ;then
-		if test -f $a &&test `find $d -maxdepth 1 -type f -iname "${a##*/}" -printf %s` -gt $y;then echo SHL rm -f$w $b
+	elif [ "$d" ] ;then
+		if [ -f $a ]&&[ `find $d -noleaf -maxdepth 1 -type f -iname "${a##*/}" -printf %s` -gt $y ];then rm -f$w $b
 		else mv -f$w $b $a
 		fi
 	fi
@@ -59,7 +60,6 @@ for s in `find $p $d -type f -regextype posix-extended -iregex ^.*/$f\$ -printf 
 	b=$fx
 	y=$z
 }
-return
 done
 unset IFS
 }
