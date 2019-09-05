@@ -1,16 +1,16 @@
 filsz(){
-e=;d=;w=v;p=~+;x='tmp,bak'
+e=;d=;w=v;x='tmp,bak';p=~+
 for o
 {
 case ${o:0:3} in
--x)	
-	x=${o#-x[= ]};;
--d)
+-x*)	
+	x=${o#-x};x=${x#=};;
+-d*)
 	o=${o#-d[= ]/}
 	a=${o%,*};b=${o#*,}
 	o=${a:+"-mindepth $a "}${b:+"-maxdepth $b "};;
 -nv)	w=;;
-/[a-z])
+/[a-z]*)
 	if [ -d "$o" ] ;then
 		p=$o
 	elif [ -e $o ] ;then
@@ -22,7 +22,7 @@ case ${o:0:3} in
 *)
 	if [ -f ~+/$o ] ;then	e=$o
 	elif [ -d ~+/$o ] ;then p=~+/$o
-	else echo Directory/file  \'~+/$o\'does not exist;return 1
+	else echo Directory/file  \'$PWD/$o\' does not exist;return 1
 	fi;;
 esac
 }
@@ -36,7 +36,7 @@ IFS=$'\n'
 s==;while [ "$s" ]
 do
 y=0;a=;b=;d=;s=
-for s in `find $p $d -type f -regextype posix-extended -iregex ^.*/$f\$ -printf '%p %s\n' |head -n313`
+for s in `find $p $d -type f -regextype posix-extended -iregex ^.*/$f\$ -printf '%p %s\n' |head -n199`
 {
 	fx=${s% *};h=${fx%/*};z=${s##* }
 	if [[ ${fx: -4} =~ $xt ]] ;then e=${fx:0:-4}
